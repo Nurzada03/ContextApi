@@ -1,58 +1,79 @@
-import { useState } from "react";
-import styles from "./App.module.css";
-import AddUser from "./components/AddUser/AddUser";
-import UserList from "./components/UserList/UserList";
+import React from "react";
+import { useReducer } from "react";
+import { createContext } from "react";
+import styled from "styled-components";
+import { TodoForm } from "./components/TodoForm";
+import { TodoList } from "./components/TodoList";
 
-const dataList = [
-  {
-    name: "Bayaman",
-    age: 90,
-  },
-  {
-    name: "Zhumabek",
-    age: 25,
-  },
-  {
-    name: "Nurbolot",
-    age: 24,
-  },
-  {
-    name: "Zhasmina",
-    age: 23,
-  },
-  {
-    name: "Feruza",
-    age: 19,
-  },
-  {
-    name: "Nurzada",
-    age: 18,
-  },
-];
+const defaultState = {
+  todos: [],
+};
 
-function App() {
-  const [userList, setuserList] = useState(dataList);
+export const AppContext = createContext(defaultState);
 
-  const addNewExpenseHadler = (data) => {
-    const upUserList = [...userList];
-    upUserList.push(data);
-    setuserList(upUserList);
-  };
+export const funcktions = {
+  ADD_TODO: "ADD_TODO",
+  DELETE_TODO: "DELETE_TODO",
+  COMPLETED: false,
+};
 
-  userList.sort((a, b) => {
-    return b.age - a.age;
-  });
+const reducer = (state, action) => {
+  const { type, payload } = action;
+  console.log(state);
+  switch (type) {
+    case funcktions.ADD_TODO:
+      return { todos: [payload, ...state.todos] };
+    case funcktions.DELETE_TODO:
+      return { todos: state.todos.filter((todo) => todo.id !== payload) };
+    case funcktions.COMPLETED:
+      const completed = state.todos.map((elem) => {
+        if (elem.id === action.payload.id) {
+          return { ...elem, complete: !elem.complete };
+        }
+        return elem;
+      });
+      return { ...state, todos: completed };
 
+    default:
+      return state;
+  }
+};
+
+export const App = () => {
+  const [state, dispatch] = useReducer(reducer, defaultState);
   return (
-    <div className={styles.App}>
-      <div className={styles.formContainer}>
-        <AddUser onNewList={addNewExpenseHadler} />
-      </div>
-      <div className={styles.listContainer}>
-        <UserList expenses={userList} />
-      </div>
-    </div>
-  );
-}
+    <>
+      <MainContainer>
+    <InnreContainer >
+<StyledTet> Todo: {state.todos.length}</StyledTet>
+      
+        
+        <AppContext.Provider value={{ state, dispatch }}>
+          <TodoForm />
+          <TodoList />
+        </AppContext.Provider>
 
-export default App;
+    </InnreContainer>
+          
+      </MainContainer>
+    </>
+  );
+};
+
+const MainContainer = styled.div`
+display: flex;
+justify-content: center;
+text-align:center;
+margin-top: 150px;
+`
+const StyledTet = styled.h1`
+color:red;
+font-weight:bold;
+text-decoration:underline;
+`
+const InnreContainer = styled.div`
+border: 9px double gold;
+width: 600px;
+border-radius:3px;
+padding: 50px;
+`
